@@ -2,9 +2,11 @@ package com.example.store_management_tool.service;
 
 import com.example.store_management_tool.controller.dto.ProductDto;
 import com.example.store_management_tool.coverter.ProductConverter;
+import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.ProductRepository;
 import com.example.store_management_tool.service.exception.ProductAlreadyExistsException;
 import com.example.store_management_tool.service.exception.ProductNotFoundException;
+import com.example.store_management_tool.service.model.OrderItem;
 import com.example.store_management_tool.service.model.Product;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class ProductService {
 
     private final ProductRepository repository;
     private final ProductConverter productConvertor;
+    private final OrderItemRepository orderItemRepository;
 
     @Transactional
     public void addProduct(ProductDto productDto) {
@@ -39,6 +42,11 @@ public class ProductService {
 
         oldProduct.setPrice(newPrice);
         repository.save(oldProduct);
+        List<OrderItem> orderItems = orderItemRepository.findAllByProductId(id);
+        orderItems.forEach(orderItem -> {
+            orderItem.setPrice(newPrice * orderItem.getQuantity());
+            orderItemRepository.save(orderItem);
+        });
     }
 
     @Transactional

@@ -4,6 +4,8 @@ import com.example.store_management_tool.service.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -26,5 +28,8 @@ public class Order {
     private PaymentMethod paymentMethod;
 
     private double totalPrice;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
 
 }

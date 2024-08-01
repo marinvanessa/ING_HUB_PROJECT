@@ -40,6 +40,8 @@ public class OrderService {
         Order order = getOrder(id);
 
         checkAuthorisation(order.getUser());
+        List<OrderItem> orderItems = order.getOrderItems();
+        orderItemRepository.deleteAll(orderItems);
 
         orderRepository.delete(order);
     }
