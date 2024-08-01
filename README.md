@@ -21,3 +21,19 @@
 - **Endpoint:** `DELETE /api/admin/products/{id}`
 - **Descriere:** Șterge un produs existent după ID
 - **Roluri:** ADMIN
+
+### Ștergere Toate Produsele
+- **Endpoint:** `DELETE /api/admin/products`
+- **Descriere:** Șterge toate produsele din sistem
+- **Roluri:** ADMIN
+
+### Obținere Detalii Produs
+- **Endpoint:** `GET /api/products/{id}`
+- **Descriere:** Obține detalii despre un produs după ID
+- **Roluri:** USER, ADMIN
+
+### Listare Produse
+- **Endpoint:** `GET /api/products`
+- **Descriere:** Obține toate produsele
+- **Roluri:** USER, ADMIN
+
