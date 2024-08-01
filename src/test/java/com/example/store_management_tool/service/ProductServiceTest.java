@@ -84,7 +84,6 @@ public class ProductServiceTest {
         double newPrice = 10.89;
         Product existingProduct = ProductUtil.createProduct();
         existingProduct.setId(productId);
-        existingProduct.setPrice(40.00);
 
         OrderItem orderItem = new OrderItem();
         orderItem.setProduct(existingProduct);

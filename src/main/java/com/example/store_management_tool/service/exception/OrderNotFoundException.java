@@ -18,7 +18,7 @@ public class OrderNotFoundException extends RuntimeException {
     }
 
     public String getMessage() {
-        return "Order with id " + id + " inside order was not found";
+        return "Order with id " + id + " was not found";
     }
 
 }

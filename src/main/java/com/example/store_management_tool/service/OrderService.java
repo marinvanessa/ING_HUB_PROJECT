@@ -125,8 +125,6 @@ public class OrderService {
 
                 })
                 .collect(Collectors.toList());
-
-
     }
 
     private void checkAuthorisation(User user) {
