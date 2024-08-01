@@ -27,8 +27,8 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.getOrders());
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/orders/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<String> deleteOrderById(@PathVariable UUID id) throws OrderNotFoundException {
         orderService.deleteOrderById(id);
         return ResponseEntity.status(HttpStatus.OK).body("Order deleted successfully!");

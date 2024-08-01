@@ -10,5 +10,4 @@ public class OrderDto {
 
     private List<OrderItemDto> itemDtoList;
     private PaymentMethod paymentMethod;
-    private double totalPrice;
 }

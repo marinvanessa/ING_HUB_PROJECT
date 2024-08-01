@@ -5,7 +5,6 @@ import com.example.store_management_tool.controller.dto.OrderResponseDto;
 import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.OrderRepository;
 import com.example.store_management_tool.repository.ProductRepository;
-import com.example.store_management_tool.repository.UserRepository;
 import com.example.store_management_tool.service.exception.AccessForbiddenException;
 import com.example.store_management_tool.service.exception.OrderNotFoundException;
 import com.example.store_management_tool.service.exception.ProductNotFoundException;
@@ -30,7 +29,6 @@ public class OrderService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
-    private final UserRepository userRepository;
 
     public List<Order> getOrders() {
         return orderRepository.findAll();
@@ -38,23 +36,32 @@ public class OrderService {
 
     @Transactional
     public void deleteOrderById(UUID id) {
-        orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
+
+        Order order = getOrder(id);
+
+        if (!order.getUser().equals(userService.getUserByEmail(retrieveUserDetails().getUsername())) &&
+                retrieveUserDetails().getAuthorities().stream().noneMatch(grantedAuthority ->
+                        grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
+        }
+
+        orderRepository.delete(order);
+    }
+
+    private Order getOrder(UUID id) {
+        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
     }
 
     @Transactional
     public void placeOrder(OrderDto orderDto) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userService.getUserByEmail(userDetails.getUsername());
 
         Order order = new Order();
         order.setId(UUID.randomUUID());
-        order.setUser(user);
-        order.setTotalPrice(orderDto.getTotalPrice());
+        order.setUser(retrieveCurrentUser());
         order.setPaymentMethod(orderDto.getPaymentMethod());
+        orderRepository.saveAndFlush(order);
 
-        orderRepository.save(order);
-
-        orderDto.getItemDtoList().stream().map(
+        double totalPrice = orderDto.getItemDtoList().stream().map(
                 orderItemDto -> {
                     Product product = productRepository.findById(orderItemDto.getProductId())
                             .orElseThrow(() -> new ProductNotFoundException(orderItemDto.getProductId().toString()));
@@ -63,21 +70,24 @@ public class OrderService {
                     orderItem.setOrder(order);
                     orderItem.setProduct(product);
                     orderItem.setQuantity(orderItemDto.getQuantity());
-                    orderItem.setPrice(product.getPrice() * orderItem.getQuantity());
-                    return orderItem;
+                    orderItem.setPrice(product.getPrice() * orderItemDto.getQuantity());
+
+                    orderItemRepository.save(orderItem);
+                    return orderItem.getPrice();
                 }
-        ).forEach(orderItemRepository::save);
+        ).reduce(0.0, Double::sum);
+        order.setTotalPrice(totalPrice);
+        orderRepository.save(order);
     }
 
     public OrderResponseDto getOrderDetails(UUID id) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
 
-        if (!order.getUser().equals(userService.getUserByEmail(userDetails.getUsername())) &&
-                userDetails.getAuthorities().stream().noneMatch(grantedAuthority ->
+        if (!order.getUser().equals(userService.getUserByEmail(retrieveUserDetails().getUsername())) &&
+                retrieveUserDetails().getAuthorities().stream().noneMatch(grantedAuthority ->
                         grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessForbiddenException("You don't have access to see order details");
+            throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
 
         }
 
@@ -90,17 +100,24 @@ public class OrderService {
     }
 
     public List<OrderResponseDto> getOrdersByUser(UUID userId) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User currentUser = userService.getUserByEmail(userDetails.getUsername());
 
-        if (!currentUser.getId().equals(userId) && userDetails.getAuthorities().stream().noneMatch(grantedAuthority ->
+        if (!retrieveCurrentUser().getId().equals(userId) && retrieveUserDetails().getAuthorities().stream().noneMatch(grantedAuthority ->
                 grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
         }
         List<Order> ordersByUserId = orderRepository.findOrdersByUserId(userId);
         return ordersByUserId.stream().map(order ->
-                new OrderResponseDto(order.getId(), order.getTotalPrice(), order.getPaymentMethod()))
+                        new OrderResponseDto(order.getId(), order.getTotalPrice(), order.getPaymentMethod()))
                 .collect(Collectors.toList());
 
 
+    }
+
+    private UserDetails retrieveUserDetails() {
+        return (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    private User retrieveCurrentUser() {
+        return userService.getUserByEmail(retrieveUserDetails().getUsername());
     }
 }

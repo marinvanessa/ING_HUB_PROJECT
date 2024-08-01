@@ -6,6 +6,7 @@ import com.example.store_management_tool.controller.dto.OrderItemUpdateRequestDt
 import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.OrderRepository;
 import com.example.store_management_tool.repository.ProductRepository;
+import com.example.store_management_tool.service.exception.ItemNotFoundInsideOrderException;
 import com.example.store_management_tool.service.exception.OrderItemNotFoundException;
 import com.example.store_management_tool.service.exception.OrderNotFoundException;
 import com.example.store_management_tool.service.exception.ProductNotFoundException;
@@ -27,10 +28,8 @@ public class OrderItemService {
 
     @Transactional
     public void addItemToOrder(OrderItemDto orderItemDto) {
-        Order order = orderRepository.findById(orderItemDto.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException(orderItemDto.getOrderId().toString()));
-        Product product = productRepository.findById(orderItemDto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(orderItemDto.getProductId().toString()));
+        Order order = getOrder(orderItemDto.getOrderId());
+        Product product = getProduct(orderItemDto.getProductId());
 
         OrderItem orderItem = new OrderItem();
         orderItem.setId(UUID.randomUUID());
@@ -40,6 +39,7 @@ public class OrderItemService {
         orderItem.setPrice(product.getPrice() * orderItem.getQuantity());
         repository.save(orderItem);
     }
+
 
     @Transactional
     public void deleteItemFromOrder(UUID orderId, UUID itemId) {
@@ -56,15 +56,13 @@ public class OrderItemService {
 
         repository.deleteById(itemId);
     }
+
     public OrderItemResponseDto getItemFromOrderDetails(UUID orderId, UUID itemId) {
-        Order order =  orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId.toString()));
-        OrderItem item = repository.findById(itemId)
-                .orElseThrow(() -> new OrderItemNotFoundException(itemId.toString()));
+        Order order = getOrder(orderId);
+        OrderItem item = getOrderItem(itemId);
 
         if (!item.getOrder().equals(order)) {
-//             TODO:
-            System.out.println("add an exception here");
+            throw new ItemNotFoundInsideOrderException(itemId.toString());
         }
 
 
@@ -76,17 +74,13 @@ public class OrderItemService {
 
     @Transactional
     public void updateItemInTheOrder(OrderItemUpdateRequestDto updateRequestDto) {
-        Order order =  orderRepository.findById(updateRequestDto.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException(updateRequestDto.getOrderId().toString()));
-        OrderItem item = repository.findById(updateRequestDto.getItemId())
-                .orElseThrow(() -> new OrderItemNotFoundException(updateRequestDto.getItemId().toString()));
-        Product product = productRepository.findById(updateRequestDto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException(updateRequestDto.getProductId().toString()));
+        Order order = getOrder(updateRequestDto.getOrderId());
+        OrderItem item = getOrderItem(updateRequestDto.getItemId());
+        Product product = getProduct(updateRequestDto.getProductId());
 
 
         if (!item.getOrder().equals(order)) {
-//             TODO:
-            System.out.println("add an exception here");
+            throw new ItemNotFoundInsideOrderException(item.getId().toString());
         }
 
         item.setProduct(product);
@@ -97,5 +91,18 @@ public class OrderItemService {
 
     }
 
+    private OrderItem getOrderItem(UUID itemId) {
+        return repository.findById(itemId)
+                .orElseThrow(() -> new OrderItemNotFoundException(itemId.toString()));
+    }
 
+    private Product getProduct(UUID productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(productId.toString()));
+    }
+
+    private Order getOrder(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId.toString()));
+    }
 }

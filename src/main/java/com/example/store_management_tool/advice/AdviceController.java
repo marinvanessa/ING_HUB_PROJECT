@@ -68,4 +68,15 @@ public class AdviceController {
         return new ResponseEntity<>(message, HttpStatus.FORBIDDEN);
     }
 
+
+    @ExceptionHandler(ItemNotFoundInsideOrderException.class)
+    public ResponseEntity<String> handleItemNotFoundInsideOrderException(ItemNotFoundInsideOrderException ex) {
+        log.debug(ERROR_REQUEST, ex);
+        log.error("Item not found inside order: {}", ex.getMessage());
+        String message = String.format("Item with id %s  inside order was not found", ex.getId());
+        return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+    }
+
+
+
 }

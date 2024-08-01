@@ -10,7 +10,7 @@ public class AccessForbiddenException extends RuntimeException {
     public final String id;
 
     public AccessForbiddenException(String id) {
-        super();
+        super("User with id " + id + " hasn't access");
         this.id = id;
     }
 }
