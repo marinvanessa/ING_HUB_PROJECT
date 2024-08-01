@@ -86,5 +86,8 @@
 - **Descriere:** Obține detalii despre un articol specific într-o comandă
 - **Roluri:** USER, ADMIN
 
+![Descrierea imaginii](image/schema.png)
+
+
 
 
