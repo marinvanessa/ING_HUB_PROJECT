@@ -1,11 +1,9 @@
 package com.example.store_management_tool.controller;
 
 import com.example.store_management_tool.controller.dto.ProductDto;
-import com.example.store_management_tool.controller.dto.UpdatePriceProductDto;
 import com.example.store_management_tool.service.ProductService;
 import com.example.store_management_tool.service.exception.ProductAlreadyExistsException;
 import com.example.store_management_tool.service.exception.ProductNotFoundException;
-import com.example.store_management_tool.service.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +29,8 @@ public class ProductController {
 
     @PutMapping("/admin/products")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> updateProductPrice(@RequestBody UpdatePriceProductDto updatePriceProductDto) throws ProductNotFoundException {
-        productService.updateProductPrice(updatePriceProductDto);
+    public ResponseEntity<String> updateProductPrice(@RequestParam UUID id, @RequestParam double newPrice) throws ProductNotFoundException {
+        productService.updateProductPrice(id, newPrice);
         return ResponseEntity.status(HttpStatus.OK).body("Product updated successfully!");
     }
 
@@ -51,12 +49,12 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable UUID id) throws ProductNotFoundException {
+    public ResponseEntity<ProductDto> getProduct(@PathVariable UUID id) throws ProductNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts() {
+    public ResponseEntity<List<ProductDto>> getProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
     }
 }

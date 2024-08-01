@@ -17,7 +17,6 @@ public class Product {
     @NonNull
     private UUID id;
 
-    @NonNull
     private String name;
 
     private String description;
