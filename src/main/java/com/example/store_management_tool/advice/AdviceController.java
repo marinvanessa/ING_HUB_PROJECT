@@ -52,6 +52,14 @@ public class AdviceController {
         return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(UserWithThisEmailAlreadyExistsException.class)
+    public ResponseEntity<String> handleUserWithThisEmailAlreadyExistsException(UserWithThisEmailAlreadyExistsException ex) {
+        log.debug(ERROR_REQUEST, ex);
+        log.error("User already exists: {}", ex.getMessage());
+        String message = String.format("User with email %s already exists", ex.getEmail());
+        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(AccessForbiddenException.class)
     public ResponseEntity<String> handleAccessForbiddenException(AccessForbiddenException ex) {
         log.debug(ERROR_REQUEST, ex);
