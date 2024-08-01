@@ -39,17 +39,9 @@ public class OrderService {
 
         Order order = getOrder(id);
 
-        if (!order.getUser().equals(userService.getUserByEmail(retrieveUserDetails().getUsername())) &&
-                retrieveUserDetails().getAuthorities().stream().noneMatch(grantedAuthority ->
-                        grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
-        }
+        checkAuthorisation(order.getUser());
 
         orderRepository.delete(order);
-    }
-
-    private Order getOrder(UUID id) {
-        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
     }
 
     @Transactional
@@ -59,6 +51,7 @@ public class OrderService {
         order.setId(UUID.randomUUID());
         order.setUser(retrieveCurrentUser());
         order.setPaymentMethod(orderDto.getPaymentMethod());
+
         orderRepository.saveAndFlush(order);
 
         double totalPrice = orderDto.getItemDtoList().stream().map(
@@ -84,12 +77,7 @@ public class OrderService {
 
         Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
 
-        if (!order.getUser().equals(userService.getUserByEmail(retrieveUserDetails().getUsername())) &&
-                retrieveUserDetails().getAuthorities().stream().noneMatch(grantedAuthority ->
-                        grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
-
-        }
+        checkAuthorisation(order.getUser());
 
         OrderResponseDto orderResponseDto = new OrderResponseDto();
         orderResponseDto.setId(order.getId());
@@ -112,6 +100,19 @@ public class OrderService {
 
 
     }
+
+    private void checkAuthorisation(User user) {
+        if (!user.equals(userService.getUserByEmail(retrieveUserDetails().getUsername())) &&
+                retrieveUserDetails().getAuthorities().stream().noneMatch(grantedAuthority ->
+                        grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
+        }
+    }
+
+    private Order getOrder(UUID id) {
+        return orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
+    }
+
 
     private UserDetails retrieveUserDetails() {
         return (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

@@ -6,15 +6,15 @@ import com.example.store_management_tool.controller.dto.OrderItemUpdateRequestDt
 import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.OrderRepository;
 import com.example.store_management_tool.repository.ProductRepository;
-import com.example.store_management_tool.service.exception.ItemNotFoundInsideOrderException;
-import com.example.store_management_tool.service.exception.OrderItemNotFoundException;
-import com.example.store_management_tool.service.exception.OrderNotFoundException;
-import com.example.store_management_tool.service.exception.ProductNotFoundException;
+import com.example.store_management_tool.service.exception.*;
 import com.example.store_management_tool.service.model.Order;
 import com.example.store_management_tool.service.model.OrderItem;
 import com.example.store_management_tool.service.model.Product;
+import com.example.store_management_tool.service.model.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -25,11 +25,15 @@ public class OrderItemService {
     private final OrderItemRepository repository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
+
 
     @Transactional
     public void addItemToOrder(OrderItemDto orderItemDto) {
         Order order = getOrder(orderItemDto.getOrderId());
         Product product = getProduct(orderItemDto.getProductId());
+
+      checkAuthorisation(order);
 
         OrderItem orderItem = new OrderItem();
         orderItem.setId(UUID.randomUUID());
@@ -53,6 +57,7 @@ public class OrderItemService {
             throw new OrderItemNotFoundException(itemId.toString());
 
         }
+        checkAuthorisation(getOrder(orderId));
 
         repository.deleteById(itemId);
     }
@@ -65,6 +70,7 @@ public class OrderItemService {
             throw new ItemNotFoundInsideOrderException(itemId.toString());
         }
 
+        checkAuthorisation(order);
 
         OrderItemResponseDto orderItemResponseDto = new OrderItemResponseDto();
         orderItemResponseDto.setProduct(item.getProduct());
@@ -83,12 +89,21 @@ public class OrderItemService {
             throw new ItemNotFoundInsideOrderException(item.getId().toString());
         }
 
+        checkAuthorisation(order);
+
         item.setProduct(product);
         item.setQuantity(updateRequestDto.getQuantity());
         item.setPrice(updateRequestDto.getQuantity() * product.getPrice());
 
         repository.save(item);
 
+    }
+
+    private void checkAuthorisation(Order order) {
+        if (!order.getUser().equals(retrieveCurrentUser()) && retrieveUserDetails().getAuthorities().stream().noneMatch(grantedAuthority ->
+                grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
+        }
     }
 
     private OrderItem getOrderItem(UUID itemId) {
@@ -104,5 +119,13 @@ public class OrderItemService {
     private Order getOrder(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId.toString()));
+    }
+
+    private UserDetails retrieveUserDetails() {
+        return (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    private User retrieveCurrentUser() {
+        return userService.getUserByEmail(retrieveUserDetails().getUsername());
     }
 }
