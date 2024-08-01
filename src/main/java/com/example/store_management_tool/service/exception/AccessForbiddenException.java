@@ -6,11 +6,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.FORBIDDEN)
 public class AccessForbiddenException extends RuntimeException {
+
+    private static final long serialVersionUID = -123456789L;
+
     @Getter
     public final String id;
 
     public AccessForbiddenException(String id) {
-        super("User with id " + id + " hasn't access");
+        super();
         this.id = id;
+    }
+
+    public String getMessage() {
+        return "User with id " + id + " access is forbidden";
     }
 }

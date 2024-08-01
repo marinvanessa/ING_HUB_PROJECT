@@ -2,6 +2,7 @@ package com.example.store_management_tool.service;
 
 import com.example.store_management_tool.controller.dto.OrderDto;
 import com.example.store_management_tool.controller.dto.OrderResponseDto;
+import com.example.store_management_tool.coverter.OrderItemConverter;
 import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.OrderRepository;
 import com.example.store_management_tool.repository.ProductRepository;
@@ -29,9 +30,22 @@ public class OrderService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+    private final OrderItemConverter orderConverter;
 
-    public List<Order> getOrders() {
-        return orderRepository.findAll();
+    public List<OrderResponseDto> getOrders() {
+        List<Order> orderList = orderRepository.findAll();
+        return orderList.stream().map(order -> {
+            OrderResponseDto orderResponseDto = new OrderResponseDto();
+            orderResponseDto.setId(order.getId());
+            orderResponseDto.setPaymentMethod(order.getPaymentMethod());
+            orderResponseDto.setTotalPrice(order.getTotalPrice());
+
+            orderResponseDto.setOrderItemResponseDtoList(orderItemRepository.findAllByOrderId(order.getId())
+                    .stream()
+                    .map(orderConverter::convertEntityToOrderItemResponseDto)
+                    .collect(Collectors.toList()));
+            return orderResponseDto;
+        }).collect(Collectors.toList());
     }
 
     @Transactional
@@ -85,6 +99,10 @@ public class OrderService {
         orderResponseDto.setId(order.getId());
         orderResponseDto.setPaymentMethod(order.getPaymentMethod());
         orderResponseDto.setTotalPrice(order.getTotalPrice());
+        orderResponseDto.setOrderItemResponseDtoList(orderItemRepository.findAllByOrderId(order.getId())
+                .stream()
+                .map(orderConverter::convertEntityToOrderItemResponseDto)
+                .collect(Collectors.toList()));
 
         return orderResponseDto;
     }
@@ -96,8 +114,16 @@ public class OrderService {
             throw new AccessForbiddenException(retrieveCurrentUser().getId().toString());
         }
         List<Order> ordersByUserId = orderRepository.findOrdersByUserId(userId);
-        return ordersByUserId.stream().map(order ->
-                        new OrderResponseDto(order.getId(), order.getTotalPrice(), order.getPaymentMethod()))
+        return ordersByUserId.stream().map(order -> {
+                    List<OrderItem> orderItemList = orderItemRepository.findAllByOrderId(order.getId());
+                    return new OrderResponseDto(order.getId(),
+                            order.getTotalPrice(),
+                            order.getPaymentMethod(),
+                            orderItemList.stream()
+                                    .map(orderConverter::convertEntityToOrderItemResponseDto)
+                                    .collect(Collectors.toList()));
+
+                })
                 .collect(Collectors.toList());
 
 

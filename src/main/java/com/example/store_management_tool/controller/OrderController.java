@@ -23,7 +23,7 @@ public class OrderController {
 
     @GetMapping("/orders")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Order>> getOrders() {
+    public ResponseEntity<List<OrderResponseDto>> getOrders() {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.getOrders());
     }
 

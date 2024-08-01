@@ -49,11 +49,13 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<ProductDto> getProduct(@PathVariable UUID id) throws ProductNotFoundException {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(id));
     }
 
     @GetMapping("/products")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<List<ProductDto>> getProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProducts());
     }

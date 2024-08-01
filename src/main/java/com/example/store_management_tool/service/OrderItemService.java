@@ -3,6 +3,7 @@ package com.example.store_management_tool.service;
 import com.example.store_management_tool.controller.dto.OrderItemDto;
 import com.example.store_management_tool.controller.dto.OrderItemResponseDto;
 import com.example.store_management_tool.controller.dto.OrderItemUpdateRequestDto;
+import com.example.store_management_tool.coverter.ProductConverter;
 import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.OrderRepository;
 import com.example.store_management_tool.repository.ProductRepository;
@@ -26,6 +27,7 @@ public class OrderItemService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserService userService;
+    private final ProductConverter productConverter;
 
 
     @Transactional
@@ -73,7 +75,7 @@ public class OrderItemService {
         checkAuthorisation(order);
 
         OrderItemResponseDto orderItemResponseDto = new OrderItemResponseDto();
-        orderItemResponseDto.setProduct(item.getProduct());
+        orderItemResponseDto.setProductDto(productConverter.convertEntityToDto(item.getProduct()));
         orderItemResponseDto.setQuantity(item.getQuantity());
         return orderItemResponseDto;
     }

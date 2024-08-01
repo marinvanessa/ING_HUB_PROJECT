@@ -7,12 +7,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class UserWithThisEmailAlreadyExistsException extends RuntimeException {
 
+    private static final long serialVersionUID = -123456789L;
+
     @Getter
     public final String email;
 
 
     public UserWithThisEmailAlreadyExistsException(String email) {
-        super("User with email " + email + " already exists");
+        super();
         this.email = email;
+    }
+
+    public String getMessage() {
+        return "User with email " + email + " already exists";
     }
 }

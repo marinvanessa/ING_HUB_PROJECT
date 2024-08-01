@@ -30,6 +30,7 @@ public class SecurityConfiguration {
                                 .requestMatchers("/api/user/**").hasRole("USER")
                                 .requestMatchers("/api/items/**").hasAnyRole("USER", "ADMIN")
                                 .requestMatchers("/api/orders/**").hasAnyRole("USER", "ADMIN")
+                                .requestMatchers("/api/products/**").hasAnyRole("USER", "ADMIN")
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .anyRequest().authenticated()
 

@@ -11,6 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OrderItemResponseDto {
 
-    private Product product;
+    private ProductDto productDto;
     private int quantity;
 }
