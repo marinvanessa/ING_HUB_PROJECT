@@ -31,7 +31,7 @@ public class OrderItemController {
 
     @DeleteMapping("/orders/{orderId}/items/{itemId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    public ResponseEntity<String> addItemToOrder(@PathVariable UUID orderId, @PathVariable UUID itemId) throws
+    public ResponseEntity<String> deleteItemToOrder(@PathVariable UUID orderId, @PathVariable UUID itemId) throws
             OrderNotFoundException, ProductNotFoundException {
         service.deleteItemFromOrder(orderId, itemId);
         return ResponseEntity.status(HttpStatus.OK).body("Item deleted successfully!");
