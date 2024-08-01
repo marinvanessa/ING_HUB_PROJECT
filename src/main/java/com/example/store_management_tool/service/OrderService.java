@@ -5,6 +5,7 @@ import com.example.store_management_tool.controller.dto.OrderResponseDto;
 import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.OrderRepository;
 import com.example.store_management_tool.repository.ProductRepository;
+import com.example.store_management_tool.repository.UserRepository;
 import com.example.store_management_tool.service.exception.AccessForbidenException;
 import com.example.store_management_tool.service.exception.OrderNotFoundException;
 import com.example.store_management_tool.service.exception.ProductNotFoundException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class OrderService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
+    private final UserRepository userRepository;
 
     public List<Order> getOrders() {
         return orderRepository.findAll();
@@ -60,7 +63,7 @@ public class OrderService {
                     orderItem.setOrder(order);
                     orderItem.setProduct(product);
                     orderItem.setQuantity(orderItemDto.getQuantity());
-                    orderItem.setPrice(orderItemDto.getPrice());
+                    orderItem.setPrice(product.getPrice() * orderItem.getQuantity());
                     return orderItem;
                 }
         ).forEach(orderItemRepository::save);
@@ -84,5 +87,20 @@ public class OrderService {
         orderResponseDto.setTotalPrice(order.getTotalPrice());
 
         return orderResponseDto;
+    }
+
+    public List<OrderResponseDto> getOrdersByUser(UUID userId) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User currentUser = userService.getUserByEmail(userDetails.getUsername());
+
+        if (!currentUser.getId().equals(userId) && userDetails.getAuthorities().stream().noneMatch(grantedAuthority ->
+                grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+        }
+        List<Order> ordersByUserId = orderRepository.findOrdersByUserId(userId);
+        return ordersByUserId.stream().map(order ->
+                new OrderResponseDto(order.getId(), order.getTotalPrice(), order.getPaymentMethod()))
+                .collect(Collectors.toList());
+
+
     }
 }

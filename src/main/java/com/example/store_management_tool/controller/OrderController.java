@@ -46,4 +46,11 @@ public class OrderController {
         orderService.placeOrder(orderDto);
         return ResponseEntity.status(HttpStatus.OK).body("Order placed successfully!");
     }
+
+    @GetMapping("/orders/user/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    public ResponseEntity<List<OrderResponseDto>> getOrdersByUser(@PathVariable UUID userId) throws OrderNotFoundException {
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.getOrdersByUser(userId));
+    }
+
 }

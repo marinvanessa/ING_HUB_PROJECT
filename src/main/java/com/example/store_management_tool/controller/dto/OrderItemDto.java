@@ -7,7 +7,7 @@ import java.util.UUID;
 @Getter
 public class OrderItemDto {
 
+    private UUID orderId;
     private UUID productId;
     private int quantity;
-    private double price;
 }
