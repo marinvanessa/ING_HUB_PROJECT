@@ -6,7 +6,7 @@ import com.example.store_management_tool.repository.OrderItemRepository;
 import com.example.store_management_tool.repository.OrderRepository;
 import com.example.store_management_tool.repository.ProductRepository;
 import com.example.store_management_tool.repository.UserRepository;
-import com.example.store_management_tool.service.exception.AccessForbidenException;
+import com.example.store_management_tool.service.exception.AccessForbiddenException;
 import com.example.store_management_tool.service.exception.OrderNotFoundException;
 import com.example.store_management_tool.service.exception.ProductNotFoundException;
 import com.example.store_management_tool.service.model.Order;
@@ -38,7 +38,7 @@ public class OrderService {
 
     @Transactional
     public void deleteOrderById(UUID id) {
-        orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException("Order not found"));
+        orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
     }
 
     @Transactional
@@ -57,7 +57,7 @@ public class OrderService {
         orderDto.getItemDtoList().stream().map(
                 orderItemDto -> {
                     Product product = productRepository.findById(orderItemDto.getProductId())
-                            .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+                            .orElseThrow(() -> new ProductNotFoundException(orderItemDto.getProductId().toString()));
                     OrderItem orderItem = new OrderItem();
                     orderItem.setId(UUID.randomUUID());
                     orderItem.setOrder(order);
@@ -72,12 +72,12 @@ public class OrderService {
     public OrderResponseDto getOrderDetails(UUID id) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException("Order not found"));
+        Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id.toString()));
 
         if (!order.getUser().equals(userService.getUserByEmail(userDetails.getUsername())) &&
                 userDetails.getAuthorities().stream().noneMatch(grantedAuthority ->
                         grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
-            throw new AccessForbidenException("You don't have access to see order details");
+            throw new AccessForbiddenException("You don't have access to see order details");
 
         }
 

@@ -24,7 +24,7 @@ public class ProductService {
         Product product = repository.findByName(productDto.getName()).orElse(null);
 
         if (product != null) {
-            throw new ProductAlreadyExistsException("Product with name '" + product.getName() + "' already exists");
+            throw new ProductAlreadyExistsException(product.getId().toString());
         }
 
         Product newProduct = new Product();
@@ -38,7 +38,7 @@ public class ProductService {
     @Transactional
     public void updateProductPrice(UpdatePriceProductDto updatePriceProductDto) {
         Product oldProduct = repository.findByName(updatePriceProductDto.getName()).orElseThrow(() ->
-                new ProductNotFoundException("Product with name '" + updatePriceProductDto.getName() + "' not found"));
+                new ProductNotFoundException("gggg"));
 
         oldProduct.setPrice(updatePriceProductDto.getPrice());
         repository.save(oldProduct);
@@ -54,12 +54,12 @@ public class ProductService {
         if (repository.existsById(id)) {
             repository.deleteById(id);
         } else {
-            throw new ProductNotFoundException("Product was not found");
+            throw new ProductNotFoundException(id.toString());
         }
     }
 
     public Product getProductById(UUID id) {
-        return repository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found"));
+        return repository.findById(id).orElseThrow(() -> new ProductNotFoundException(id.toString()));
     }
 
     public List<Product> getProducts() {

@@ -28,9 +28,9 @@ public class OrderItemService {
     @Transactional
     public void addItemToOrder(OrderItemDto orderItemDto) {
         Order order = orderRepository.findById(orderItemDto.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException(orderItemDto.getOrderId().toString()));
         Product product = productRepository.findById(orderItemDto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException(orderItemDto.getProductId().toString()));
 
         OrderItem orderItem = new OrderItem();
         orderItem.setId(UUID.randomUUID());
@@ -45,12 +45,12 @@ public class OrderItemService {
     public void deleteItemFromOrder(UUID orderId, UUID itemId) {
 
         if (!orderRepository.existsById(orderId)) {
-            throw new OrderNotFoundException("order not found");
+            throw new OrderNotFoundException(orderId.toString());
 
         }
 
         if (!repository.existsById(itemId)) {
-            throw new OrderItemNotFoundException("item not found");
+            throw new OrderItemNotFoundException(itemId.toString());
 
         }
 
@@ -58,9 +58,9 @@ public class OrderItemService {
     }
     public OrderItemResponseDto getItemFromOrderDetails(UUID orderId, UUID itemId) {
         Order order =  orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("order not found"));
+                .orElseThrow(() -> new OrderNotFoundException(orderId.toString()));
         OrderItem item = repository.findById(itemId)
-                .orElseThrow(() -> new OrderItemNotFoundException("Item not found"));
+                .orElseThrow(() -> new OrderItemNotFoundException(itemId.toString()));
 
         if (!item.getOrder().equals(order)) {
 //             TODO:
@@ -77,11 +77,11 @@ public class OrderItemService {
     @Transactional
     public void updateItemInTheOrder(OrderItemUpdateRequestDto updateRequestDto) {
         Order order =  orderRepository.findById(updateRequestDto.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException("order not found"));
+                .orElseThrow(() -> new OrderNotFoundException(updateRequestDto.getOrderId().toString()));
         OrderItem item = repository.findById(updateRequestDto.getItemId())
-                .orElseThrow(() -> new OrderItemNotFoundException("Item not found"));
+                .orElseThrow(() -> new OrderItemNotFoundException(updateRequestDto.getItemId().toString()));
         Product product = productRepository.findById(updateRequestDto.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
+                .orElseThrow(() -> new ProductNotFoundException(updateRequestDto.getProductId().toString()));
 
 
         if (!item.getOrder().equals(order)) {

@@ -22,7 +22,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
 
-    @Transactional
     public void registerUser(UserRegistrationRequestDto userRegistrationDto) {
         User user = new User();
         user.setId(UUID.randomUUID());
@@ -34,7 +33,7 @@ public class UserService {
 
     public String login(UserLoginRequestDto loginRequestDto) {
         User user = repository.findByEmail(loginRequestDto.getEmail()).orElseThrow(() -> new
-                UsernameNotFoundException("User was not found"));
+                UsernameNotFoundException("Username was not found"));
 
         if (!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid password");
@@ -44,7 +43,7 @@ public class UserService {
     }
 
     public User getUserByEmail(String email) {
-        return repository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return repository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("Username was not found"));
     }
 
 }
