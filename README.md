@@ -1,4 +1,6 @@
 # API Documentation
+## Schema SQL
+![SQL](images/SQL.png)
 
 ## Endpoint-uri pentru Utilizator
 
@@ -86,7 +88,7 @@
 - **Descriere:** Obține detalii despre un articol specific într-o comandă
 - **Roluri:** USER, ADMIN
 
-![SQL](image/SQL.png)
+
 
 
 
