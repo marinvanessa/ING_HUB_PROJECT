@@ -30,7 +30,7 @@ public class OrderService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private final OrderItemRepository orderItemRepository;
-    private final OrderItemConverter orderConverter;
+    private final OrderItemConverter orderItemConverter;
 
     public List<OrderResponseDto> getOrders() {
         List<Order> orderList = orderRepository.findAll();
@@ -42,7 +42,7 @@ public class OrderService {
 
             orderResponseDto.setOrderItemResponseDtoList(orderItemRepository.findAllByOrderId(order.getId())
                     .stream()
-                    .map(orderConverter::convertEntityToOrderItemResponseDto)
+                    .map(orderItemConverter::convertEntityToOrderItemResponseDto)
                     .collect(Collectors.toList()));
             return orderResponseDto;
         }).collect(Collectors.toList());
@@ -101,7 +101,7 @@ public class OrderService {
         orderResponseDto.setTotalPrice(order.getTotalPrice());
         orderResponseDto.setOrderItemResponseDtoList(orderItemRepository.findAllByOrderId(order.getId())
                 .stream()
-                .map(orderConverter::convertEntityToOrderItemResponseDto)
+                .map(orderItemConverter::convertEntityToOrderItemResponseDto)
                 .collect(Collectors.toList()));
 
         return orderResponseDto;
@@ -120,7 +120,7 @@ public class OrderService {
                             order.getTotalPrice(),
                             order.getPaymentMethod(),
                             orderItemList.stream()
-                                    .map(orderConverter::convertEntityToOrderItemResponseDto)
+                                    .map(orderItemConverter::convertEntityToOrderItemResponseDto)
                                     .collect(Collectors.toList()));
 
                 })
