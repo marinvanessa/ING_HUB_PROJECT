@@ -4,6 +4,7 @@ import com.example.store_management_tool.controller.dto.UserLoginRequestDto;
 import com.example.store_management_tool.controller.dto.UserRegistrationRequestDto;
 import com.example.store_management_tool.repository.UserRepository;
 import com.example.store_management_tool.service.model.User;
+import com.example.store_management_tool.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +19,7 @@ public class UserService {
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final JWTUtil jwtUtil;
 
     public void registerUser(UserRegistrationRequestDto userRegistrationDto) {
         User user = new User();
@@ -28,7 +30,7 @@ public class UserService {
         repository.save(user);
     }
 
-    public User login(UserLoginRequestDto loginRequestDto) {
+    public String login(UserLoginRequestDto loginRequestDto) {
         User user = repository.findByEmail(loginRequestDto.getEmail()).orElseThrow(() -> new
                 UsernameNotFoundException("User was not found"));
 
@@ -36,7 +38,7 @@ public class UserService {
             throw new BadCredentialsException("Invalid password");
 
         }
-        return user;
+        return jwtUtil.generateToken(user.getEmail(), user.getRole().name());
     }
 
 }
