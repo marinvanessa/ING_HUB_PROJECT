@@ -1,5 +1,6 @@
 package com.example.store_management_tool.service.model;
 
+import com.example.store_management_tool.service.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,5 +22,9 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
     private double totalPrice;
+
 }

@@ -12,8 +12,6 @@ public class StoreManagementToolApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(StoreManagementToolApplication.class, args);
-		User customer = new User(UUID.randomUUID(), "mail", "pass", Role.ROLE_ADMIN);
-        System.out.println(customer.getAuthorities());
     }
 
 }
