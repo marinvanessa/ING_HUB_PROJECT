@@ -37,7 +37,7 @@
 - **Descriere:** Obține toate produsele
 - **Roluri:** USER, ADMIN
 
-- ## Endpoint-uri pentru Comandă
+## Endpoint-uri pentru Comandă
 
 ### Create Comandă
 - **Endpoint:** `POST /api/orders`
