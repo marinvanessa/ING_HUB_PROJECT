@@ -27,7 +27,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorizationRequest ->
                         authorizationRequest
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/user/**").hasRole("USER")
+                                .requestMatchers("/api/user/**").hasRole("USER")
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .anyRequest().authenticated()
 
